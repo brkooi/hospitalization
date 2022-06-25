@@ -21,51 +21,64 @@ fluidPage(
                      format = "yyyy-mm-dd"),
       
       numericInput("vLag", 
-                   h3("Lag Hospital Admissions"), 
+                   "Lag Hospital Admissions", 
                    value = 5),
       
-      selectInput("indepvar", label = h3("Explanatory variable 1"),
+      numericInput("vMtry", 
+                   "mtry-parameter Random Forest", 
+                   value = 2),
+      
+      numericInput("vNtree", 
+                   "ntree-parameter Random Forest", 
+                   value = 500),
+      
+      selectInput("predictor1", label = "Predictor 1",
                   choices = list("Tested_positive" = "Tested_positive",
                                  "RNA_flow_per_measurement"="RNA_flow_per_measurement",
                                  "Coverage_primary_partly"="Coverage_primary_partly",
                                  "Coverage_primary_completed"="Coverage_primary_completed",
                                  "MA_perc_covid_symptoms"="MA_perc_covid_symptoms"), selected = 1),
       
-      selectInput("indepvar2", label = h3("Explanatory variable 2"),
+      selectInput("predictor2", label = "Predictor 2",
                   choices = list("Tested_positive" = "Tested_positive",
                                  "RNA_flow_per_measurement"="RNA_flow_per_measurement",
                                  "Coverage_primary_partly"="Coverage_primary_partly",
                                  "Coverage_primary_completed"="Coverage_primary_completed",
                                  "MA_perc_covid_symptoms"="MA_perc_covid_symptoms"), selected = 2),
       
-      selectInput("indepvar3", label = h3("Explanatory variable 3"),
+      selectInput("predictor3", label = "Predictor 3",
                   choices = list("Tested_positive" = "Tested_positive",
                                  "RNA_flow_per_measurement"="RNA_flow_per_measurement",
                                  "Coverage_primary_partly"="Coverage_primary_partly",
                                  "Coverage_primary_completed"="Coverage_primary_completed",
                                  "MA_perc_covid_symptoms"="MA_perc_covid_symptoms"), selected = 3),
+      numericInput("valuePredictor1", 
+                   "Value Predictor 1", 
+                   value = 0),
       
+      numericInput("valuePredictor2", 
+                   "Value Predictor 2", 
+                   value = 0),
+      
+      numericInput("valuePredictor3", 
+                   "Value Predictor 3", 
+                   value = 0),
       width = 2
       
     ),
-    
     mainPanel(
       
       tabsetPanel(type = "tabs",
                   tabPanel("Data", DT::dataTableOutput('tbl')), # Data as datatable
                   tabPanel("Summary selected data",verbatimTextOutput("summaryData")),
-                  tabPanel("Scatterplot", plotOutput("scatterplot1"), plotOutput("scatterplot2"), plotOutput("scatterplot4")), # Plot
-                  tabPanel("Distribution", # Plots of distributions
-                           fluidRow(
-                             column(6, plotOutput("distribution1")),
-                             column(6, plotOutput("distribution2")),
-                             column(6, plotOutput("distribution3")),
-                             column(6, plotOutput("distribution4")))
-                  ),
-                  tabPanel("Variables - Timeserie", plotOutput("VarPlot1"), plotOutput("VarPlot2"),plotOutput("VarPlot3"),plotOutput("VarPlot4")),
-                  tabPanel("Multiple Lineair Regression - Hospital Admissions", verbatimTextOutput("summaryMLR")),
-                  tabPanel("Model Summary", verbatimTextOutput("summary")), # Regression output
-                  tabPanel("Model Collinearity", verbatimTextOutput("modelVIF")),
+                  tabPanel("Scatterplot", plotOutput("scatterplot1"), plotOutput("scatterplot2"), plotOutput("scatterplot3")), # Plot
+                  tabPanel("Predictors - Timeserie", plotOutput("VarPlot1"), plotOutput("VarPlot2"),plotOutput("VarPlot3")),
+                  tabPanel("Random Forest - All Predictors", verbatimTextOutput("summaryAll")),
+                  tabPanel("Predictor Importance", plotOutput("varImportance")),
+                  tabPanel("Random Forest - Selected Predictors", verbatimTextOutput("summarySelected")),
+                  tabPanel("Random Forest - Actual vs Predicted", plotOutput("plotSelected")),
+                  tabPanel("Random Forest - Prediction",verbatimTextOutput("prediction"))
+                  
                   
       ),
       width = 10

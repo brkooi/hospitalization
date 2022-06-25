@@ -23,7 +23,7 @@ function(input, output, session) {
   inputModel <- reactive({
     
     dataModel <- subset(filtered_data(), select = -c(Date_of_statistics, IC_admission, Tested_with_result, RNA_flow_per_100000))
-    dataModel <- scale(dataModel)
+   # dataModel <- scale(dataModel)
     
     dataModel <- as.data.frame(dataModel)
     
@@ -31,138 +31,131 @@ function(input, output, session) {
     
   })
   
-  fitRG <- reactive({
+  fit_all <-  reactive({
+    set.seed(2345)
+    fit_all <- randomForest(formula=Hospital_admission ~ ., data=inputModel(), mtry=input$vMtry, ntree=input$vNtree, importance=TRUE, na.action=na.omit)
+    fit_all
+  })
+  
+  fit_selected <- reactive({
     set.seed(1234)
-    data <- inputModel()
-    fit <- lm(data$Hospital_admission ~ data[,input$indepvar] + data[,input$indepvar2] + data[,input$indepvar3])
-    names(fit$coefficients) <- c("Intercept", input$indepvar, input$indepvar2, input$indepvar3)
+    formula_selected <- paste("Hospital_admission", "~",input$predictor1,"+",input$predictor2,"+",input$predictor3)
+    fit <- randomForest(formula=as.formula(formula_selected), data=inputModel(), mtry=input$vMtry, ntree=input$vNtree, na.action=na.omit)
     fit
   })
   
-  
-  
-  varImportance <- reactive({
-    as.data.frame(importance(fitRF()))
-  })
+  output$varImportance <- renderPlot({
+    varImpPlot(fit_all())
+  }, height=480)
   
   # Summary data output
   output$summaryData <- renderPrint({
     summary(filtered_data())
   })
   
-  # Regression output
-  output$summary <- renderPrint({
-    summary(fitRG())
+  # Display model based on selected variables
+  output$summarySelected <- renderPrint({
+    fit <- fit_selected()
+    fit
   })
   
-  # MLRegression summary
-  output$summaryMLR <- renderPrint({
-    fitMLR <- lm(Hospital_admission ~ ., data=inputModel())
-    summary(fitMLR)
-  })
-  
-  # Model Collinearity
-  output$modelVIF <- renderPrint({
-    vif(fitRG())
+  # Display model based on all variables
+  output$summaryAll <- renderPrint({
+    fit <- fit_all()
+    fit
   })
   
   
+  output$plotSelected <- renderPlot({
+    data <- filtered_data()
+    data_mod <- data.frame(Predicted = predict(fit_selected()),  # Create data for ggplot2
+                           Actual = data$Hospital_admission)
+    ggplot(data_mod,                                     # Draw plot using ggplot2 package
+           aes(x = Predicted,
+               y = Actual)) +
+      geom_point() +
+      geom_abline(intercept = 0,
+                  slope = 1,
+                  color = "red",
+                  size = 2) 
+    
+  })
   
   
-  # Data output
+  # Display the data of the selected period
   output$tbl = DT::renderDataTable({
     DT::datatable(filtered_data(), options = list(lengthChange = FALSE))
   })
   
   
+  
+  
   # Scatterplot output
   output$scatterplot1 <- renderPlot({
     data <- filtered_data()
-    plot(data[,input$indepvar], data$Hospital_admission, main=paste("Scatterplot", input$indepvar, "x Hospital_admission"),
-         xlab=input$indepvar, ylab="Hospital_admission", pch=19)
-    abline(lm(data$Hospital_admission ~ filtered_data()[,input$indepvar]), col="red")
-    lines(lowess(filtered_data()[,input$indepvar],data$Hospital_admission), col="blue")
+    predictor1 <- data[,input$predictor1]
+    ggplot(data = data, aes(x = predictor1 , y = Hospital_admission)) + 
+      geom_point(color='blue') +
+      geom_smooth(method = "lm", se = FALSE, color="red")
   }, height=400)
   
   output$scatterplot2 <- renderPlot({
     data <- filtered_data()
-    plot(data[,input$indepvar2], data$Hospital_admission, main=paste("Scatterplot", input$indepvar2, "x Hospital_admission"),
-         xlab=input$indepvar2, ylab="Hospital_admission", pch=19)
-    abline(lm(data$Hospital_admission ~ filtered_data()[,input$indepvar2]), col="red")
-    lines(lowess(filtered_data()[,input$indepvar2],data$Hospital_admission), col="blue")
+    predictor2 <- data[,input$predictor2]
+    ggplot(data = data, aes(x = predictor2 , y = Hospital_admission)) + 
+      geom_point(color='blue') +
+      geom_smooth(method = "lm", se = FALSE, color="red")
   }, height=400)
   
   output$scatterplot3 <- renderPlot({
     data <- filtered_data()
-    plot(filtered_data()[,input$indepvar3], data$Hospital_admission, main=paste("Scatterplot", input$indepvar3, "x Hospital_admission"),
-         xlab=input$indepvar3, ylab="Hospital_admission", pch=19)
-    abline(lm(data$Hospital_admission ~ filtered_data()[,input$indepvar3]), col="red")
-    lines(lowess(filtered_data()[,input$indepvar3],data$Hospital_admission), col="blue")
+    predictor3 <- data[,input$predictor3]
+    ggplot(data = data, aes(x = predictor3 , y = Hospital_admission)) + 
+      geom_point(color='blue') +
+      geom_smooth(method = "lm", se = FALSE, color="red")
   }, height=400)
   
   # VarPlot output
   output$VarPlot1 <- renderPlot({
     data <- filtered_data()
+    predictor1 <- scale(as.numeric(filtered_data()[,input$predictor1]))
     ggplot(data, aes(x=Date_of_statistics)) + 
-      geom_line(aes(y=data$Hospital_admission,color = data$Hospital_admission)) +
-      geom_smooth(aes(y=data$Hospital_admission,method='loess')) +
+      geom_line(aes(y=scale(data$Hospital_admission),color = "blue")) +
+      geom_line(aes(y=predictor1,color = "red")) +
       xlab("")
   }, height=400)
   
   # VarPlot output
   output$VarPlot2 <- renderPlot({
-    ggplot(filtered_data(), aes(x=Date_of_statistics)) + 
-      geom_line(aes(y=filtered_data()[,input$indepvar],color = input$indepvar)) +
-      geom_smooth(aes(y=filtered_data()[,input$indepvar],method='loess')) +
+    data <- filtered_data()
+    predictor2 <- scale(as.numeric(filtered_data()[,input$predictor2]))
+    ggplot(data, aes(x=Date_of_statistics)) + 
+      geom_line(aes(y=scale(data$Hospital_admission),color = "blue")) +
+      geom_line(aes(y=predictor2,color = "red")) +
       xlab("")
   }, height=400)
   
   # VarPlot output
   output$VarPlot3 <- renderPlot({
-    ggplot(filtered_data(), aes(x=Date_of_statistics)) + 
-      geom_line(aes(y=filtered_data()[,input$indepvar2],color = input$indepvar2)) +
-      geom_smooth(aes(y=filtered_data()[,input$indepvar2],method='loess')) +
-      xlab("")
-  }, height=400)
-  
-  # VarPlot output
-  output$VarPlot4 <- renderPlot({
-    ggplot(filtered_data(), aes(x=Date_of_statistics)) + 
-      geom_line(aes(y=filtered_data()[,input$indepvar3],color = input$indepvar3)) +
-      geom_smooth(aes(y=filtered_data()[,input$indepvar3],method='loess')) +
-      xlab("")
-  }, height=400)
-  
-  # VarPlot output
-  output$scatterplot4 <- renderPlot({
     data <- filtered_data()
-    ggplot(data, aes(x=filtered_data()[,input$indepvar3])) + 
-      geom_point(aes(y=data$Hospital_admission,color = data$Hospital_admission)) +
-      geom_smooth(aes(y=data$Hospital_admission,method='lm')) +
+    predictor3 <- scale(as.numeric(filtered_data()[,input$predictor3]))
+    ggplot(data, aes(x=Date_of_statistics)) + 
+      geom_line(aes(y=scale(data$Hospital_admission),color = "blue")) +
+      geom_line(aes(y=predictor3,color = "red")) +
       xlab("")
   }, height=400)
+ 
+  # Prediction
+  output$prediction <- renderPrint({
+    model <- fit_selected()
+    predictor1 <- as.numeric(input$valuePredictor1)
+    predictor2 <- as.numeric(input$valuePredictor2)
+    predictor3 <- as.numeric(input$valuePredictor3)
+    inputdata <<- data.frame(predictor1,predictor2,predictor3)
+    inputdata <- setNames(inputdata, c(input$predictor1,input$predictor2,input$predictor3))
+    prediction <- predict(model, newdata=inputdata,type="response")
+    prediction
   
-  
-  
-  # Histogram output outcome
-  output$distribution1 <- renderPlot({
-    data <- filtered_data()
-    hist(data$Hospital_admission, main="Frequency Hospital Admissions", xlab="Hospital_admission")
-  }, height=300, width=300)
-  
-  # Histogram output var 1
-  output$distribution2 <- renderPlot({
-    hist(filtered_data()[,input$indepvar], main=paste("Frequency ",input$indepvar), xlab=input$indepvar)
-  }, height=300, width=300)
-  
-  # Histogram output var 2
-  output$distribution3 <- renderPlot({
-    hist(filtered_data()[,input$indepvar2], main=paste("Frequency ",input$indepvar2), xlab=input$indepvar2)
-  }, height=300, width=300)
-  
-  # Histogram output var 3
-  output$distribution4 <- renderPlot({
-    hist(filtered_data()[,input$indepvar3], main=paste("Frequency ",input$indepvar3), xlab=input$indepvar3)
-  }, height=300, width=300)
+  })
   
 }
