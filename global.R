@@ -1,6 +1,7 @@
 
 #load packages
 library(shiny)
+library(plotly)
 library(dplyr)
 library(ggplot2)
 library(car)

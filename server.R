@@ -116,39 +116,46 @@ function(input, output, session) {
   }, height=400)
   
   # Timeseries plot Hospital admissions
-  output$HospitalAdmissionsPlot <- renderPlot({
+  output$HospitalAdmissionsPlot <- renderPlotly({
     data <- filtered_data()
-    ggplot(data, aes(x=Date_of_statistics, y=data$Hospital_admission, color = data$Hospital_admission)) + 
-      geom_line()
-  }, height=400)
+    plot <- ggplot(data, aes(x=Date_of_statistics, y=Hospital_admission)) + 
+            geom_line(color = "blue")
+    ggplotly(plot)
+  })
   
   # Timeseries plot predictor 1
-  output$Predictor1Plot <- renderPlot({
+  output$Predictor1Plot <- renderPlotly({
     data <- filtered_data()
     predictor1 <- filtered_data()[,input$predictor1]
-    ggplot(data, aes(x=Date_of_statistics, y=predictor1, color = "red")) + 
-      geom_line() +
-      geom_smooth()
-  }, height=400)
+    plot <-ggplot(data, aes(x=Date_of_statistics, y=predictor1)) + 
+      geom_line(color = "red") +
+      geom_smooth() +
+      ylab(input$predictor1)
+    ggplotly(plot)
+  })
   
   
   # Timeseries plot predictor 2
-  output$Predictor2Plot <- renderPlot({
+  output$Predictor2Plot <- renderPlotly({
     data <- filtered_data()
     predictor2 <- filtered_data()[,input$predictor2]
-    ggplot(data, aes(x=Date_of_statistics, y=predictor2, color = "red")) + 
-      geom_line() +
-      geom_smooth()
-  }, height=400)
+    plot <- ggplot(data, aes(x=Date_of_statistics, y=predictor2)) + 
+            geom_line(color = "red") +
+            geom_smooth()
+    plot$labels$y<-as.character(input$predictor2)
+    ggplotly(plot)
+  })
   
   # Timeseries plot predictor 3
-  output$Predictor3Plot <- renderPlot({
+  output$Predictor3Plot <- renderPlotly({
     data <- filtered_data()
     predictor3 <- filtered_data()[,input$predictor3]
-    ggplot(data, aes(x=Date_of_statistics, y=predictor3, color = "red")) + 
-      geom_line() +
-      geom_smooth()
-  }, height=400)
+    plot <- ggplot(data, aes(x=Date_of_statistics, y=predictor3)) + 
+            geom_line(color = "red") +
+            geom_smooth() +
+            ylab(input$predictor3)
+    ggplotly(plot)
+  })
   
 
   # Prediction
