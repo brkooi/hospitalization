@@ -72,7 +72,7 @@ fluidPage(
                   tabPanel("Data", DT::dataTableOutput('tbl')), # Data as datatable
                   tabPanel("Summary selected data",verbatimTextOutput("summaryData")),
                   tabPanel("Scatterplot", plotOutput("scatterplot1"), plotOutput("scatterplot2"), plotOutput("scatterplot3")), # Plot
-                  tabPanel("Predictors - Timeserie", plotOutput("VarPlot1"), plotOutput("VarPlot2"),plotOutput("VarPlot3")),
+                  tabPanel("Predictors - Timeserie", plotOutput("HospitalAdmissionsPlot"), plotOutput("Predictor1Plot"),plotOutput("Predictor2Plot"),plotOutput("Predictor3Plot")),
                   tabPanel("Random Forest - All Predictors", verbatimTextOutput("summaryAll")),
                   tabPanel("Predictor Importance", plotOutput("varImportance")),
                   tabPanel("Random Forest - Selected Predictors", verbatimTextOutput("summarySelected")),

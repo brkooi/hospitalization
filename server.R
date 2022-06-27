@@ -84,7 +84,7 @@ function(input, output, session) {
   
   # Display the data of the selected period
   output$tbl = DT::renderDataTable({
-    DT::datatable(filtered_data(), options = list(lengthChange = FALSE))
+    DT::datatable(inputModel(), options = list(lengthChange = FALSE))
   })
   
   
@@ -115,36 +115,42 @@ function(input, output, session) {
       geom_smooth(method = "lm", se = FALSE, color="red")
   }, height=400)
   
-  # VarPlot output
-  output$VarPlot1 <- renderPlot({
+  # Timeseries plot Hospital admissions
+  output$HospitalAdmissionsPlot <- renderPlot({
     data <- filtered_data()
-    predictor1 <- scale(as.numeric(filtered_data()[,input$predictor1]))
-    ggplot(data, aes(x=Date_of_statistics)) + 
-      geom_line(aes(y=scale(data$Hospital_admission),color = "blue")) +
-      geom_line(aes(y=predictor1,color = "red")) +
-      xlab("")
+    ggplot(data, aes(x=Date_of_statistics, y=data$Hospital_admission, color = data$Hospital_admission)) + 
+      geom_line()
   }, height=400)
   
-  # VarPlot output
-  output$VarPlot2 <- renderPlot({
+  # Timeseries plot predictor 1
+  output$Predictor1Plot <- renderPlot({
     data <- filtered_data()
-    predictor2 <- scale(as.numeric(filtered_data()[,input$predictor2]))
-    ggplot(data, aes(x=Date_of_statistics)) + 
-      geom_line(aes(y=scale(data$Hospital_admission),color = "blue")) +
-      geom_line(aes(y=predictor2,color = "red")) +
-      xlab("")
+    predictor1 <- filtered_data()[,input$predictor1]
+    ggplot(data, aes(x=Date_of_statistics, y=predictor1, color = "red")) + 
+      geom_line() +
+      geom_smooth()
   }, height=400)
   
-  # VarPlot output
-  output$VarPlot3 <- renderPlot({
+  
+  # Timeseries plot predictor 2
+  output$Predictor2Plot <- renderPlot({
     data <- filtered_data()
-    predictor3 <- scale(as.numeric(filtered_data()[,input$predictor3]))
-    ggplot(data, aes(x=Date_of_statistics)) + 
-      geom_line(aes(y=scale(data$Hospital_admission),color = "blue")) +
-      geom_line(aes(y=predictor3,color = "red")) +
-      xlab("")
+    predictor2 <- filtered_data()[,input$predictor2]
+    ggplot(data, aes(x=Date_of_statistics, y=predictor2, color = "red")) + 
+      geom_line() +
+      geom_smooth()
   }, height=400)
- 
+  
+  # Timeseries plot predictor 3
+  output$Predictor3Plot <- renderPlot({
+    data <- filtered_data()
+    predictor3 <- filtered_data()[,input$predictor3]
+    ggplot(data, aes(x=Date_of_statistics, y=predictor3, color = "red")) + 
+      geom_line() +
+      geom_smooth()
+  }, height=400)
+  
+
   # Prediction
   output$prediction <- renderPrint({
     model <- fit_selected()
