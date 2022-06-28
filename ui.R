@@ -71,7 +71,7 @@ fluidPage(
       tabsetPanel(type = "tabs",
                   tabPanel("Data", DT::dataTableOutput('tbl')), # Data as datatable
                   tabPanel("Summary selected data",verbatimTextOutput("summaryData")),
-                  tabPanel("Scatterplot", plotOutput("scatterplot1"), plotOutput("scatterplot2"), plotOutput("scatterplot3")), # Plot
+                  tabPanel("Scatterplot", plotlyOutput("scatterplot1"), plotlyOutput("scatterplot2"), plotlyOutput("scatterplot3")), 
                   tabPanel("Predictors - Timeserie", plotlyOutput("HospitalAdmissionsPlot"), plotlyOutput("Predictor1Plot"),plotlyOutput("Predictor2Plot"),plotlyOutput("Predictor3Plot")),
                   tabPanel("Random Forest - All Predictors", verbatimTextOutput("summaryAll")),
                   tabPanel("Predictor Importance", plotOutput("varImportance")),

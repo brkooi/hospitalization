@@ -45,7 +45,7 @@ function(input, output, session) {
   })
   
   output$varImportance <- renderPlot({
-    varImpPlot(fit_all())
+    varImpPlot(fit_all(), main = "Predictor importance" )
   }, height=480)
   
   # Summary data output
@@ -68,9 +68,9 @@ function(input, output, session) {
   
   output$plotSelected <- renderPlot({
     data <- filtered_data()
-    data_mod <- data.frame(Predicted = predict(fit_selected()),  # Create data for ggplot2
+    data_model <- data.frame(Predicted = predict(fit_selected()), 
                            Actual = data$Hospital_admission)
-    ggplot(data_mod,                                     # Draw plot using ggplot2 package
+    ggplot(data_model,                                     
            aes(x = Predicted,
                y = Actual)) +
       geom_point() +
@@ -91,29 +91,35 @@ function(input, output, session) {
   
   
   # Scatterplot output
-  output$scatterplot1 <- renderPlot({
+  output$scatterplot1 <- renderPlotly({
     data <- filtered_data()
     predictor1 <- data[,input$predictor1]
-    ggplot(data = data, aes(x = predictor1 , y = Hospital_admission)) + 
+    plot <- ggplot(data = data, aes(x = predictor1 , y = Hospital_admission)) + 
       geom_point(color='blue') +
-      geom_smooth(method = "lm", se = FALSE, color="red")
-  }, height=400)
+      geom_smooth(method = "lm", se = FALSE, color="red") +
+      xlab(input$predictor1)
+    ggplotly(plot)
+  })
   
-  output$scatterplot2 <- renderPlot({
+  output$scatterplot2 <- renderPlotly({
     data <- filtered_data()
     predictor2 <- data[,input$predictor2]
-    ggplot(data = data, aes(x = predictor2 , y = Hospital_admission)) + 
+    plot <- ggplot(data = data, aes(x = predictor2 , y = Hospital_admission)) + 
       geom_point(color='blue') +
-      geom_smooth(method = "lm", se = FALSE, color="red")
-  }, height=400)
+      geom_smooth(method = "lm", se = FALSE, color="red") +
+      xlab(input$predictor2)
+    ggplotly(plot)
+  })
   
-  output$scatterplot3 <- renderPlot({
+  output$scatterplot3 <- renderPlotly({
     data <- filtered_data()
     predictor3 <- data[,input$predictor3]
-    ggplot(data = data, aes(x = predictor3 , y = Hospital_admission)) + 
+    plot <- ggplot(data = data, aes(x = predictor3 , y = Hospital_admission)) + 
       geom_point(color='blue') +
-      geom_smooth(method = "lm", se = FALSE, color="red")
-  }, height=400)
+      geom_smooth(method = "lm", se = FALSE, color="red") +
+      xlab(input$predictor3)
+    ggplotly(plot)
+  })
   
   # Timeseries plot Hospital admissions
   output$HospitalAdmissionsPlot <- renderPlotly({
