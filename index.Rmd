@@ -1,0 +1,78 @@
+---
+title       : COVID-19 Hospital Admissions
+subtitle    : regression analysis of hospital admissions during the COVID-19 pandemic
+author      : Ben Kooi
+job         : Business Intelligence Developer / Data Scientist
+framework   : io2012        # {io2012, html5slides, shower, dzslides, ...}
+highlighter : highlight.js  # {highlight.js, prettify, highlight}
+hitheme     : tomorrow      # 
+widgets     : []            # {mathjax, quiz, bootstrap}
+mode        : selfcontained # {standalone, draft}
+knit        : slidify::knit2slides
+logo        : 2913604.png
+---
+```{r, echo=FALSE, message=FALSE}
+source("global.R")
+```
+## Synopsis
+
+The aim of this analysis is to get a picture of the main variables that influence the evolution of the number of hospital admissions due to the COVID-19 pandemic.
+
+Random Forest for regression on [public datasets](https://data.rivm.nl/covid-19/) published by Rijksinstituut voor Volksgezondheid (RIVM) was used for this analysis.
+
+The most important predictors which can be used in the models are:
+*   *Tested_positive* = The count of tests on persons with a positive result per date;
+*   *RNA_flow_per_measurement* = The average count of microparts of virus in sewage per 100.000 habitants per measurement per date;
+*   **MA_perc_covid_symptoms** = The percentage of habitants with symptoms per date;
+*   **Coverage_primary_partly** = The percentage partly vaccinated habitants per date;
+*   **Coverage_primary_completed** = The percentage completly vaccinated habitants per date;
+
+A [Shiny-webapp](https://brkooi.shinyapps.io/hospitalization/) is published for supporting the analysis.
+
+
+--- .class #id 
+
+## Functionality webapp (1)
+
+* Downloading, reading, cleaning and joining datasets to one analysis-dataset. This takes a while at starting the webapp.
+* Tabpanels for displaying 
+    + table of the input data for the model;
+    + summary of the used dataset;
+    + scatterplots of the selected predictors;
+    + timeseries of the outcome- and predictors;
+    + Random forest regression with all explanatory variables for helping select the most significant ones;
+    + plot of the importance of the predictors;
+    + Random Forest based on the selected predictors;
+    + a plot of the predicted outcome vs the actual outcome;
+    + prediction of the hospital admissions based on the input values of the predictors.
+
+--- .class #id
+
+## Functionality webapp (2)
+The sidepanel is for tuning the Random Forest regression analysis for the best model possible with the selected predictors and make a prediction.
+Changing the values in this panel will influence the outcome in the tabpannels.
+
+* Sidepanel for
+    + select the period of analysis;
+    + input the lag in days between the hospital admission and the explanatory variables;
+    + three dropdown selectionboxes for selecting the explanatory variables;
+    + input values for the predictors for making a prediction.
+
+For getting the best results you have to select a period with a stable situation. You can play a little two find out the best fit in a specific period and/or determine the most important predictors.
+
+--- .class #id 
+
+## Example model
+For predicting the hospital admissions in the near future I selected the period of 2022-03-01 till 2022-06-30. In this period the situation was the most stable. There were no active measures and one dominant virus-variant Omikron.
+
+The best model I fitted, was with a lag of 7 days and the selected predictors Tested_positive, MA_perc_covid_symptoms and MA_perc_covid_symptoms. 
+```{r, echo=FALSE, message=FALSE}
+Covid19$Tested_positive <- lag(Covid19$Tested_positive, 7)
+    Covid19$RNA_flow_per_measurement <- lag(Covid19$RNA_flow_per_measurement, 7)
+    Covid19$MA_perc_covid_symptoms <- lag(Covid19$MA_perc_covid_symptoms, 7)
+    Covid19$Coverage_primary_partly <- lag(Covid19$Coverage_primary_partly, 7)
+    Covid19$Coverage_primary_completed <- lag(Covid19$Coverage_primary_completed, 7)
+Covid19 <- Covid19 %>% filter(Date_of_statistics %in% seq(as.Date("2022-03-01"), as.Date("2022-06-30"), by = "day"))
+fit <- randomForest(Hospital_admission~Tested_positive + MA_perc_covid_symptoms + RNA_flow_per_measurement, data=Covid19, na.action=na.omit, mtry=2, ntree=300)
+fit
+```

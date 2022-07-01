@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>COVID-19 Hospital Admissions</title>
+  <meta charset="utf-8">
+  <meta name="description" content="COVID-19 Hospital Admissions">
+  <meta name="author" content="Ben Kooi">
+  <meta name="generator" content="slidify" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta http-equiv="X-UA-Compatible" content="chrome=1">
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/default.css" media="all" >
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/phone.css" 
+    media="only screen and (max-device-width: 480px)" >
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/slidify.css" >
+  <link rel="stylesheet" href="libraries/highlighters/highlight.js/css/tomorrow.css" />
+  <base target="_blank"> <!-- This amazingness opens all links in a new tab. -->  <link rel=stylesheet href="./assets/css/ribbons.css"></link>
+
+  
+  <!-- Grab CDN jQuery, fall back to local if offline -->
+  <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.7.min.js"></script>
+  <script>window.jQuery || document.write('<script src="libraries/widgets/quiz/js/jquery.js"><\/script>')</script> 
+  <script data-main="libraries/frameworks/io2012/js/slides" 
+    src="libraries/frameworks/io2012/js/require-1.0.8.min.js">
+  </script>
+  
+  
+
+</head>
+<body style="opacity: 0">
+  <slides class="layout-widescreen">
+    
+    <!-- LOGO SLIDE -->
+        <slide class="title-slide segue nobackground">
+  
+  <aside class="gdbar">
+    <img src="assets/img/2913604.png">
+  </aside>
+  
+  <hgroup class="auto-fadein">
+    <h1>COVID-19 Hospital Admissions</h1>
+    <h2>regression analysis of hospital admissions during the COVID-19 pandemic</h2>
+    <p>Ben Kooi<br/>Business Intelligence Developer / Data Scientist</p>
+  </hgroup>
+  
+  <article></article>  
+  
+</slide>
+    
+
+    <!-- SLIDES -->
+    <slide class="" id="slide-1" style="background:;">
+  
+  <hgroup>
+    <h2>Synopsis</h2>
+  </hgroup>
+  
+  <article data-timings="">
+    <p>The aim of this analysis is to get a picture of the main variables that influence the evolution of the number of hospital admissions due to the COVID-19 pandemic.</p>
+
+<p>Random Forest for regression on <a href="https://data.rivm.nl/covid-19/">public datasets</a> published by Rijksinstituut voor Volksgezondheid (RIVM) was used for this analysis.</p>
+
+<p>The most important predictors which can be used in the models are:</p>
+
+<ul>
+<li>  <em>Tested_positive</em> = The count of tests on persons with a positive result per date;</li>
+<li>  <em>RNA_flow_per_measurement</em> = The average count of microparts of virus in sewage per 100.000 habitants per measurement per date;</li>
+<li>  <strong>MA_perc_covid_symptoms</strong> = The percentage of habitants with symptoms per date;</li>
+<li>  <strong>Coverage_primary_partly</strong> = The percentage partly vaccinated habitants per date;</li>
+<li>  <strong>Coverage_primary_completed</strong> = The percentage completly vaccinated habitants per date;</li>
+</ul>
+
+<p>A <a href="https://brkooi.shinyapps.io/hospitalization/">Shiny-webapp</a> is published for supporting the analysis.</p>
+
+  </article>
+  <!-- Presenter Notes -->
+  
+</slide>
+
+<slide class="class" id="id" style="background:;">
+  
+  <hgroup>
+    <h2>Functionality webapp (1)</h2>
+  </hgroup>
+  
+  <article data-timings="">
+    <ul>
+<li>Downloading, reading, cleaning and joining datasets to one analysis-dataset. This takes a while at starting the webapp.</li>
+<li>Tabpanels for displaying 
+
+<ul>
+<li>table of the input data for the model;</li>
+<li>summary of the used dataset;</li>
+<li>scatterplots of the selected predictors;</li>
+<li>timeseries of the outcome- and predictors;</li>
+<li>Random forest regression with all explanatory variables for helping select the most significant ones;</li>
+<li>plot of the importance of the predictors;</li>
+<li>Random Forest based on the selected predictors;</li>
+<li>a plot of the predicted outcome vs the actual outcome;</li>
+<li>prediction of the hospital admissions based on the input values of the predictors.</li>
+</ul></li>
+</ul>
+
+  </article>
+  <!-- Presenter Notes -->
+  
+</slide>
+
+<slide class="class" id="id" style="background:;">
+  
+  <hgroup>
+    <h2>Functionality webapp (2)</h2>
+  </hgroup>
+  
+  <article data-timings="">
+    <p>The sidepanel is for tuning the Random Forest regression analysis for the best model possible with the selected predictors and make a prediction.
+Changing the values in this panel will influence the outcome in the tabpannels.</p>
+
+<ul>
+<li>Sidepanel for
+
+<ul>
+<li>select the period of analysis;</li>
+<li>input the lag in days between the hospital admission and the explanatory variables;</li>
+<li>three dropdown selectionboxes for selecting the explanatory variables;</li>
+<li>input values for the predictors for making a prediction.</li>
+</ul></li>
+</ul>
+
+<p>For getting the best results you have to select a period with a stable situation. You can play a little two find out the best fit in a specific period and/or determine the most important predictors.</p>
+
+  </article>
+  <!-- Presenter Notes -->
+  
+</slide>
+
+<slide class="class" id="id" style="background:;">
+  
+  <hgroup>
+    <h2>Example model</h2>
+  </hgroup>
+  
+  <article data-timings="">
+    <p>For predicting the hospital admissions in the near future I selected the period of 2022-03-01 till 2022-06-30. In this period the situation was the most stable. There were no active measures and one dominant virus-variant Omikron.</p>
+
+<p>The best model I fitted, was with a lag of 7 days and the selected predictors Tested_positive, MA_perc_covid_symptoms and MA_perc_covid_symptoms. </p>
+
+<pre><code>## 
+## Call:
+##  randomForest(formula = Hospital_admission ~ Tested_positive +      MA_perc_covid_symptoms + RNA_flow_per_measurement, data = Covid19,      mtry = 2, ntree = 300, na.action = na.omit) 
+##                Type of random forest: regression
+##                      Number of trees: 300
+## No. of variables tried at each split: 2
+## 
+##           Mean of squared residuals: 432.1696
+##                     % Var explained: 94.61
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+  
+</slide>
+
+    <slide class="backdrop"></slide>
+  </slides>
+  <div class="pagination pagination-small" id='io2012-ptoc' style="display:none;">
+    <ul>
+      
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=1 title='Synopsis'>
+         1
+      </a>
+    </li>
+    
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=2 title='Functionality webapp (1)'>
+         2
+      </a>
+    </li>
+    
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=3 title='Functionality webapp (2)'>
+         3
+      </a>
+    </li>
+    
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=4 title='Example model'>
+         4
+      </a>
+    </li>
+    
+    </ul>
+  </div>  <!--[if IE]>
+    <script 
+      src="http://ajax.googleapis.com/ajax/libs/chrome-frame/1/CFInstall.min.js">  
+    </script>
+    <script>CFInstall.check({mode: 'overlay'});</script>
+  <![endif]-->
+</body>
+  <!-- Load Javascripts for Widgets -->
+  
+  <!-- LOAD HIGHLIGHTER JS FILES -->
+  <script src="libraries/highlighters/highlight.js/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <!-- DONE LOADING HIGHLIGHTER JS FILES -->
+   
+  </html>
