@@ -5,9 +5,8 @@
 # Find out more about building applications with Shiny here:
 #
 #    http://shiny.rstudio.com/
-#test
+#
 
-#library(shiny)
 
 fluidPage(
   titlePanel("Analyze Hospital Admissions in relation to COVID-19)"),
@@ -22,7 +21,7 @@ fluidPage(
       
       numericInput("vLag", 
                    "Lag Hospital Admissions", 
-                   value = 5),
+                   value = 0),
       
       numericInput("vMtry", 
                    "mtry-parameter Random Forest", 
@@ -30,7 +29,7 @@ fluidPage(
       
       numericInput("vNtree", 
                    "ntree-parameter Random Forest", 
-                   value = 500),
+                   value = 300),
       
       selectInput("predictor1", label = "Predictor 1",
                   choices = list("Tested_positive" = "Tested_positive",
@@ -71,8 +70,8 @@ fluidPage(
       tabsetPanel(type = "tabs",
                   tabPanel("Data", DT::dataTableOutput('tbl')), # Data as datatable
                   tabPanel("Summary selected data",verbatimTextOutput("summaryData")),
-                  tabPanel("Scatterplot", plotlyOutput("scatterplot1"), plotlyOutput("scatterplot2"), plotlyOutput("scatterplot3")), 
-                  tabPanel("Predictors - Timeserie", plotlyOutput("HospitalAdmissionsPlot"), plotlyOutput("Predictor1Plot"),plotlyOutput("Predictor2Plot"),plotlyOutput("Predictor3Plot")),
+                  tabPanel("Scatterplots", plotlyOutput("scatterplot1"), plotlyOutput("scatterplot2"), plotlyOutput("scatterplot3")), 
+                  tabPanel("Timeseries", plotlyOutput("HospitalAdmissionsPlot"), plotlyOutput("Predictor1Plot"),plotlyOutput("Predictor2Plot"),plotlyOutput("Predictor3Plot")),
                   tabPanel("Random Forest - All Predictors", verbatimTextOutput("summaryAll")),
                   tabPanel("Predictor Importance", plotOutput("varImportance")),
                   tabPanel("Random Forest - Selected Predictors", verbatimTextOutput("summarySelected")),

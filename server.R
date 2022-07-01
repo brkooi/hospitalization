@@ -5,12 +5,12 @@
 # Find out more about building applications with Shiny here:
 #
 #    http://shiny.rstudio.com/
-#test
-#library(shiny)
+#
+#
 
 function(input, output, session) {
   
-  
+  # create the dataset based on the period-filter and lag-variable
   filtered_data <- reactive({
     Covid19$Tested_positive <- lag(Covid19$Tested_positive, input$vLag)
     Covid19$RNA_flow_per_measurement <- lag(Covid19$RNA_flow_per_measurement, input$vLag)
@@ -20,23 +20,28 @@ function(input, output, session) {
     Covid19 %>% filter(Date_of_statistics %in% seq(input$date_range[1], input$date_range[2], by = "day"))
   })
   
+  
+  # clean the dataset as input for the Random Forest-models
   inputModel <- reactive({
     
     dataModel <- subset(filtered_data(), select = -c(Date_of_statistics, IC_admission, Tested_with_result, RNA_flow_per_100000))
-   # dataModel <- scale(dataModel)
-    
+
     dataModel <- as.data.frame(dataModel)
     
     dataModel <- dataModel %>% mutate_all(~ifelse(is.nan(.), 0, .))
     
   })
   
+  
+  # Random Forest-model based on all the predictors
   fit_all <-  reactive({
     set.seed(2345)
     fit_all <- randomForest(formula=Hospital_admission ~ ., data=inputModel(), mtry=input$vMtry, ntree=input$vNtree, importance=TRUE, na.action=na.omit)
     fit_all
   })
   
+  
+  # Random Forest-model based on the selected predictors
   fit_selected <- reactive({
     set.seed(1234)
     formula_selected <- paste("Hospital_admission", "~",input$predictor1,"+",input$predictor2,"+",input$predictor3)
@@ -44,6 +49,7 @@ function(input, output, session) {
     fit
   })
   
+  # Determine the importance of the predictors
   output$varImportance <- renderPlot({
     varImpPlot(fit_all(), main = "Predictor importance" )
   }, height=480)
@@ -82,9 +88,9 @@ function(input, output, session) {
   })
   
   
-  # Display the data of the selected period
+  # Display the input for the model of the selected period
   output$tbl = DT::renderDataTable({
-    DT::datatable(inputModel(), options = list(lengthChange = FALSE))
+    DT::datatable(subset(filtered_data(), select = -c(IC_admission, Tested_with_result, RNA_flow_per_100000)), options = list(lengthChange = FALSE))
   })
   
   
@@ -125,7 +131,8 @@ function(input, output, session) {
   output$HospitalAdmissionsPlot <- renderPlotly({
     data <- filtered_data()
     plot <- ggplot(data, aes(x=Date_of_statistics, y=Hospital_admission)) + 
-            geom_line(color = "blue")
+            geom_line(color = "blue") +
+            ggtitle("Hospital admissions in time")
     ggplotly(plot)
   })
   
@@ -136,7 +143,8 @@ function(input, output, session) {
     plot <-ggplot(data, aes(x=Date_of_statistics, y=predictor1)) + 
       geom_line(color = "red") +
       geom_smooth() +
-      ylab(input$predictor1)
+      ylab(input$predictor1) +
+      ggtitle(paste(input$predictor1,"in time"))
     ggplotly(plot)
   })
   
@@ -147,8 +155,9 @@ function(input, output, session) {
     predictor2 <- filtered_data()[,input$predictor2]
     plot <- ggplot(data, aes(x=Date_of_statistics, y=predictor2)) + 
             geom_line(color = "red") +
-            geom_smooth()
-    plot$labels$y<-as.character(input$predictor2)
+            geom_smooth() +
+            ylab(input$predictor2) +
+            ggtitle(paste(input$predictor2,"in time"))
     ggplotly(plot)
   })
   
@@ -159,7 +168,8 @@ function(input, output, session) {
     plot <- ggplot(data, aes(x=Date_of_statistics, y=predictor3)) + 
             geom_line(color = "red") +
             geom_smooth() +
-            ylab(input$predictor3)
+            ylab(input$predictor3) +
+            ggtitle(paste(input$predictor1,"in time"))
     ggplotly(plot)
   })
   
