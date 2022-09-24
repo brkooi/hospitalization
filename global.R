@@ -9,7 +9,6 @@ library(zoo)
 library(randomForest)
 
 loadMessage <- "Waiting for downloading data..........."
-loadMessage
 
 # read datasets from RIVM
 
