@@ -21,7 +21,7 @@ CovidTests<-CovidTests %>% group_by(Date_of_statistics) %>%
 
 InfectionRadar<-read.csv("https://data.rivm.nl/covid-19/COVID-19_Infectieradar_symptomen_per_dag.csv",sep=";")
 InfectionRadar<-InfectionRadar[c("Date_of_statistics", "MA_perc_covid_symptoms")]
-
+InfectionRadar$MA_perc_covid_symptoms <- na.locf(InfectionRadar$MA_perc_covid_symptoms, na.rm=FALSE)
 
 HospitalAdmissions<-read.csv("https://data.rivm.nl/covid-19/COVID-19_ziekenhuisopnames.csv",sep=";")
 HospitalAdmissions<-HospitalAdmissions[c("Date_of_statistics", "Hospital_admission")]
@@ -52,14 +52,21 @@ Vaccination <- read.csv("https://data.rivm.nl/covid-19/COVID-19_vaccinatiegraad_
 Vaccination<-Vaccination[c("Date_of_statistics", "Coverage_primary_partly", "Coverage_primary_completed")]
 Vaccination$Coverage_primary_partly[Vaccination$Coverage_primary_partly == "<=5"] <- "3"
 Vaccination$Coverage_primary_partly[Vaccination$Coverage_primary_partly == ">=95"] <- "97"
+Vaccination$Coverage_primary_partly[Vaccination$Coverage_primary_partly == "9999"] <- NA
 Vaccination$Coverage_primary_completed[Vaccination$Coverage_primary_completed == "<=5"] <- "3"
 Vaccination$Coverage_primary_completed[Vaccination$Coverage_primary_completed == ">=95"] <- "97"
+Vaccination$Coverage_primary_completed[Vaccination$Coverage_primary_completed == "9999"] <- NA
 Vaccination$Coverage_primary_partly <- as.numeric(Vaccination$Coverage_primary_partly)
 Vaccination$Coverage_primary_completed <- as.numeric(Vaccination$Coverage_primary_completed)
+
+Vaccination$Coverage_primary_completed <- na.locf(Vaccination$Coverage_primary_completed)
+Vaccination$Coverage_primary_partly <- na.locf(Vaccination$Coverage_primary_partly)
 
 Vaccination<-Vaccination %>% group_by(Date_of_statistics) %>%
   summarise(Coverage_primary_partly = median(Coverage_primary_partly),
             Coverage_primary_completed = median(Coverage_primary_completed))
+
+
 
 Covid19 <- left_join(CovidTests, HospitalAdmissions, by = "Date_of_statistics") 
 
