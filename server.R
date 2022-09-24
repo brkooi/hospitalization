@@ -15,8 +15,6 @@ function(input, output, session) {
     Covid19$Tested_positive <- lag(Covid19$Tested_positive, input$vLag)
     Covid19$RNA_flow_per_measurement <- lag(Covid19$RNA_flow_per_measurement, input$vLag)
     Covid19$MA_perc_covid_symptoms <- lag(Covid19$MA_perc_covid_symptoms, input$vLag)
-    Covid19$Coverage_primary_partly <- lag(Covid19$Coverage_primary_partly, input$vLag)
-    Covid19$Coverage_primary_completed <- lag(Covid19$Coverage_primary_completed, input$vLag)
     Covid19 %>% filter(Date_of_statistics %in% seq(input$date_range[1], input$date_range[2], by = "day"))
   })
   
